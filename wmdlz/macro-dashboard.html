@@ -127,7 +127,7 @@ async function importHistoryFromUrl(){const u=qs('historyUrl');const msg=qs('his
 function arrayToCSV(arr){if(!Array.isArray(arr)||arr.length===0)return '';const keys=Object.keys(arr[0]);const head=keys.join(',');const rows=arr.map(o=>keys.map(k=>o[k]).join(','));return [head,...rows].join('\n')}
 async function importHistoryFromFile(){const f=qs('historyFile');const msg=qs('historyMsg');const override=qs('historyOverride').checked;if(!f||!f.files||f.files.length===0){if(msg)msg.textContent='请选择文件';return}const file=f.files[0];const txt=await file.text();let parsed={};try{if(file.name.endsWith('.csv')){parsed=parseCSV(txt)}else{const json=JSON.parse(txt);parsed=Array.isArray(json)?parseCSV(arrayToCSV(json)):normalizeHistoryObj(json)}}catch(e){if(msg)msg.textContent='解析失败：'+e.message;return}mergeHistory(parsed,override);renderAllCharts();if(msg)msg.textContent='导入成功'}
 function analyzeMacro(){const pmiExp=macro.pmi>50;const pmiWeak=macro.pmi<48;const m1gtm2=macro.m1YoY>macro.m2YoY;const overheating=macro.pmi>52&&macro.cpiYoY>3;const stagf=macro.pmi<48&&macro.cpiYoY>4&&macro.unemp>5.5;let scenario='观望区间';let desc='信号不明显，继续跟踪先行指标组合';let advice='控制节奏，等待更明确的趋势组合';if(stagf){scenario='滞胀风险';desc='盈利下滑与通胀上行并存，失业率偏高';advice='降低仓位，现金为主，优先保本'}else if(overheating){scenario='过热预警';desc='扩张强劲伴随通胀抬升，政策收紧预期增强';advice='避免追高，关注防御板块与政策信号'}else if(pmiWeak&&(macro.tsfYoY<0||macro.houseWoW<0||!m1gtm2)){scenario='下行压力';desc='先行指标偏弱，信用与需求走弱';advice='谨慎为主，避免过早抄底，关注政策宽松'}else if(pmiExp&&m1gtm2&&macro.tsfYoY>=0){scenario='复苏初期';desc='流动性改善与扩张信号共振';advice='关注金融、地产、制造等周期板块'}const box=qs('macroResult');if(box)box.innerHTML=`<div style="display:flex;flex-direction:column;gap:8px"><div style="font-weight:600;font-size:18px">${scenario}</div><div>${desc}</div><div style="color:var(--ok)">${advice}</div></div>`}
-function bind(){
+async function bind(){
   renderMacroSourceForm();
   const t=qs('testSourceBtn');if(t)t.onclick=()=>{fetchMacroFromSource()};
   const n=qs('fetchNowBtn');if(n)n.onclick=()=>{fetchMacroFromSource()};
@@ -136,11 +136,15 @@ function bind(){
   const a=qs('analyzeBtn');if(a)a.onclick=()=>{appendHistory(macro);renderMeta();renderAllCharts();analyzeMacro()};
   const s=qs('loadSampleBtn');if(s)s.onclick=()=>{macro={...defaultMacro};appendHistory(macro);renderMeta();renderAllCharts();analyzeMacro()};
   const clr=qs('clearMacroBtn');if(clr)clr.onclick=()=>{history={};saveHistory(history);renderAllCharts();qs('macroResult').innerHTML=''};
+  async function loadDefaultHistory(){try{const res=await fetch('../data/macro_history.json',{cache:'no-cache'});if(res.ok){const json=await res.json();mergeHistory(json,true);renderAllCharts()}}catch(e){}}
   renderMeta();
   // ensure at least one point exists
   const hasData=(k)=>Array.isArray(history[k])&&history[k].length>0;
   if(!hasData('pmi')&&!hasData('newOrders')&&!hasData('tsfYoY')&&!hasData('m1YoY')&&!hasData('m2YoY')&&!hasData('houseWoW')&&!hasData('cpiYoY')&&!hasData('unemp')){
-    appendHistory(macro);
+    await loadDefaultHistory();
+    if(!hasData('pmi')&&!hasData('newOrders')&&!hasData('tsfYoY')&&!hasData('m1YoY')&&!hasData('m2YoY')&&!hasData('houseWoW')&&!hasData('cpiYoY')&&!hasData('unemp')){
+      appendHistory(macro);
+    }
   }
   renderAllCharts();
   scheduleDailyFetch();

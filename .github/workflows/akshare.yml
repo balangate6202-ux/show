@@ -1,0 +1,37 @@
+name: Fetch Macro History via AkShare
+on:
+  schedule:
+    - cron: "0 3 * * 6"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install akshare pandas
+      - name: Generate history
+        run: |
+          python scripts/ak_macro_fetch.py
+      - name: Commit and push
+        run: |
+          git config user.name "PagesBot"
+          git config user.email "pagesbot@example.com"
+          git add data/macro_history.json data/macro_history.csv || true
+          if [ -n "$(git status --porcelain data)" ]; then
+            git commit -m "update macro history via AkShare"
+            git push
+          else
+            echo "No changes to commit"
+          fi
