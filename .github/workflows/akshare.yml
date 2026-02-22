@@ -1,5 +1,7 @@
 name: Fetch Macro History via AkShare
 on:
+  push:
+    branches: [ main ]
   schedule:
     - cron: "0 3 * * 6"
   workflow_dispatch:
