@@ -83,10 +83,50 @@ function saveHistory(h){localStorage.setItem('wmdlz_macro_history',JSON.stringif
 let history=loadHistory()
 function appendHistory(m){const t=new Date().toISOString().slice(0,10);const push=(k,v)=>{history[k]=history[k]||[];history[k].push({t,v});if(history[k].length>360)history[k].shift()};push('pmi',m.pmi);push('newOrders',m.newOrders);push('tsfYoY',m.tsfYoY);push('m1YoY',m.m1YoY);push('m2YoY',m.m2YoY);push('houseWoW',m.houseWoW);push('cpiYoY',m.cpiYoY);push('unemp',m.unemp);saveHistory(history)}
 function renderMeta(){const set=(id,val)=>{const el=qs(id);if(el)el.textContent='当前：'+val.toFixed(2)};set('meta-pmi',macro.pmi);set('meta-newOrders',macro.newOrders);set('meta-tsfYoY',macro.tsfYoY);set('meta-m1YoY',macro.m1YoY);set('meta-m2YoY',macro.m2YoY);set('meta-houseWoW',macro.houseWoW);set('meta-cpiYoY',macro.cpiYoY);set('meta-unemp',macro.unemp)}
-function drawLineChart(canvasId,series,opts){const c=qs(canvasId);if(!c)return;const w=c.width=c.clientWidth;const h=c.height=c.clientHeight;const ctx=c.getContext('2d');const pad=32;const xs=series.map(p=>p.v).filter(v=>typeof v==='number'&&!isNaN(v));if(xs.length===0)return;const min=Math.min(...xs,opts&&opts.min!=null?opts.min:Infinity);const max=Math.max(...xs,opts&&opts.max!=null?opts.max:-Infinity);ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--panel');ctx.fillRect(0,0,w,h);ctx.strokeStyle='#334155';ctx.beginPath();ctx.moveTo(pad,h-pad);ctx.lineTo(w-pad,h-pad);ctx.lineTo(w-pad,pad);ctx.stroke();const toX=i=>pad+(w-2*pad)*(i/(series.length-1||1));const toY=v=>pad+(h-2*pad)*(1-(v-min)/(max-min||1));ctx.strokeStyle='#4f7cf7';ctx.lineWidth=2;ctx.beginPath();series.forEach((p,i)=>{const x=toX(i),y=toY(p.v);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();if(opts&&opts.threshold!=null){const y=toY(opts.threshold);ctx.strokeStyle=opts.thColor||'#22c55e';ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();ctx.setLineDash([])}}
+function drawLineChart(canvasId,series,opts){
+  const c=qs(canvasId);if(!c)return;
+  const w=c.width=c.clientWidth;const h=c.height=c.clientHeight;
+  const ctx=c.getContext('2d');const pad=32;
+  const xs=series.map(p=>p.v).filter(v=>typeof v==='number'&&!isNaN(v));
+  if(xs.length===0){ctx.clearRect(0,0,w,h);return}
+  const min=Math.min(...xs,opts&&opts.min!=null?opts.min:Infinity);
+  const max=Math.max(...xs,opts&&opts.max!=null?opts.max:-Infinity);
+  ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--panel');ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='#334155';ctx.beginPath();ctx.moveTo(pad,h-pad);ctx.lineTo(w-pad,h-pad);ctx.lineTo(w-pad,pad);ctx.stroke();
+  const toX=i=>pad+(w-2*pad)*(i/(series.length-1||1));
+  const toY=v=>pad+(h-2*pad)*(1-(v-min)/(max-min||1));
+  // line
+  if(series.length>1){
+    ctx.strokeStyle='#4f7cf7';ctx.lineWidth=2;ctx.beginPath();
+    series.forEach((p,i)=>{const x=toX(i),y=toY(p.v);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});
+    ctx.stroke();
+  }
+  // points
+  ctx.fillStyle='#4f7cf7';
+  series.forEach((p,i)=>{const x=toX(i),y=toY(p.v);ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill()});
+  // threshold
+  if(opts&&opts.threshold!=null){
+    const y=toY(opts.threshold);ctx.strokeStyle=opts.thColor||'#22c55e';ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();ctx.setLineDash([]);
+  }
+}
 function renderAllCharts(){drawLineChart('chart-pmi',history.pmi||[],{threshold:50});drawLineChart('chart-newOrders',history.newOrders||[],{});drawLineChart('chart-tsfYoY',history.tsfYoY||[],{});drawLineChart('chart-m1YoY',history.m1YoY||[],{});drawLineChart('chart-m2YoY',history.m2YoY||[],{});drawLineChart('chart-houseWoW',history.houseWoW||[],{threshold:0,thColor:'#22c55e'});drawLineChart('chart-cpiYoY',history.cpiYoY||[],{threshold:3,thColor:'#ef4444'});drawLineChart('chart-unemp',history.unemp||[],{threshold:5.5,thColor:'#ef4444'})}
 function analyzeMacro(){const pmiExp=macro.pmi>50;const pmiWeak=macro.pmi<48;const m1gtm2=macro.m1YoY>macro.m2YoY;const overheating=macro.pmi>52&&macro.cpiYoY>3;const stagf=macro.pmi<48&&macro.cpiYoY>4&&macro.unemp>5.5;let scenario='观望区间';let desc='信号不明显，继续跟踪先行指标组合';let advice='控制节奏，等待更明确的趋势组合';if(stagf){scenario='滞胀风险';desc='盈利下滑与通胀上行并存，失业率偏高';advice='降低仓位，现金为主，优先保本'}else if(overheating){scenario='过热预警';desc='扩张强劲伴随通胀抬升，政策收紧预期增强';advice='避免追高，关注防御板块与政策信号'}else if(pmiWeak&&(macro.tsfYoY<0||macro.houseWoW<0||!m1gtm2)){scenario='下行压力';desc='先行指标偏弱，信用与需求走弱';advice='谨慎为主，避免过早抄底，关注政策宽松'}else if(pmiExp&&m1gtm2&&macro.tsfYoY>=0){scenario='复苏初期';desc='流动性改善与扩张信号共振';advice='关注金融、地产、制造等周期板块'}const box=qs('macroResult');if(box)box.innerHTML=`<div style="display:flex;flex-direction:column;gap:8px"><div style="font-weight:600;font-size:18px">${scenario}</div><div>${desc}</div><div style="color:var(--ok)">${advice}</div></div>`}
-function bind(){renderMacroSourceForm();const t=qs('testSourceBtn');if(t)t.onclick=()=>{fetchMacroFromSource()};const n=qs('fetchNowBtn');if(n)n.onclick=()=>{fetchMacroFromSource()};const a=qs('analyzeBtn');if(a)a.onclick=()=>{appendHistory(macro);renderMeta();renderAllCharts();analyzeMacro()};const s=qs('loadSampleBtn');if(s)s.onclick=()=>{macro={...defaultMacro};appendHistory(macro);renderMeta();renderAllCharts();analyzeMacro()};const clr=qs('clearMacroBtn');if(clr)clr.onclick=()=>{history={};saveHistory(history);renderAllCharts();qs('macroResult').innerHTML=''};renderMeta();renderAllCharts();scheduleDailyFetch()}
+function bind(){
+  renderMacroSourceForm();
+  const t=qs('testSourceBtn');if(t)t.onclick=()=>{fetchMacroFromSource()};
+  const n=qs('fetchNowBtn');if(n)n.onclick=()=>{fetchMacroFromSource()};
+  const a=qs('analyzeBtn');if(a)a.onclick=()=>{appendHistory(macro);renderMeta();renderAllCharts();analyzeMacro()};
+  const s=qs('loadSampleBtn');if(s)s.onclick=()=>{macro={...defaultMacro};appendHistory(macro);renderMeta();renderAllCharts();analyzeMacro()};
+  const clr=qs('clearMacroBtn');if(clr)clr.onclick=()=>{history={};saveHistory(history);renderAllCharts();qs('macroResult').innerHTML=''};
+  renderMeta();
+  // ensure at least one point exists
+  const hasData=(k)=>Array.isArray(history[k])&&history[k].length>0;
+  if(!hasData('pmi')&&!hasData('newOrders')&&!hasData('tsfYoY')&&!hasData('m1YoY')&&!hasData('m2YoY')&&!hasData('houseWoW')&&!hasData('cpiYoY')&&!hasData('unemp')){
+    appendHistory(macro);
+  }
+  renderAllCharts();
+  scheduleDailyFetch();
+}
 document.addEventListener('DOMContentLoaded',bind)
 </script>
 </body>
