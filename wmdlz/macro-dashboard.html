@@ -142,10 +142,9 @@ async function bind(){
   const hasData=(k)=>Array.isArray(history[k])&&history[k].length>0;
   if(!hasData('pmi')&&!hasData('newOrders')&&!hasData('tsfYoY')&&!hasData('m1YoY')&&!hasData('m2YoY')&&!hasData('houseWoW')&&!hasData('cpiYoY')&&!hasData('unemp')){
     await loadDefaultHistory();
-    if(!hasData('pmi')&&!hasData('newOrders')&&!hasData('tsfYoY')&&!hasData('m1YoY')&&!hasData('m2YoY')&&!hasData('houseWoW')&&!hasData('cpiYoY')&&!hasData('unemp')){
-      appendHistory(macro);
-    }
+    if(!hasData('pmi')&&!hasData('newOrders')&&!hasData('tsfYoY')&&!hasData('m1YoY')&&!hasData('m2YoY')&&!hasData('houseWoW')&&!hasData('cpiYoY')&&!hasData('unemp')){appendHistory(macro)}
   }
+  if(macroSource.url){fetchMacroFromSource()}
   renderAllCharts();
   scheduleDailyFetch();
 }
