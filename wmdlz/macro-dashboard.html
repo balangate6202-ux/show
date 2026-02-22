@@ -99,10 +99,16 @@ function drawLineChart(canvasId,series,opts){
   const ctx=c.getContext('2d');const pad=32;
   const xs=series.map(p=>p.v).filter(v=>typeof v==='number'&&!isNaN(v));
   if(xs.length===0){ctx.clearRect(0,0,w,h);return}
-  const min=Math.min(...xs,opts&&opts.min!=null?opts.min:Infinity);
-  const max=Math.max(...xs,opts&&opts.max!=null?opts.max:-Infinity);
+  let min=Math.min(...xs,opts&&opts.min!=null?opts.min:Infinity);
+  let max=Math.max(...xs,opts&&opts.max!=null?opts.max:-Infinity);
+  if(min===max){min=min-1;max=max+1}
+  const range=max-min;min=min-0.05*range;max=max+0.05*range;
   ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--panel');ctx.fillRect(0,0,w,h);
   ctx.strokeStyle='#334155';ctx.beginPath();ctx.moveTo(pad,h-pad);ctx.lineTo(w-pad,h-pad);ctx.lineTo(w-pad,pad);ctx.stroke();
+  // ticks
+  ctx.fillStyle='#94a3b8';ctx.font='12px system-ui';
+  const yTicks=4;for(let i=0;i<=yTicks;i++){const val=min+(range*(i/yTicks));const y=pad+(h-2*pad)*(1-(val-min)/(max-min));ctx.beginPath();ctx.strokeStyle='#1f2937';ctx.globalAlpha=0.25;ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();ctx.globalAlpha=1;ctx.fillText(val.toFixed(2),4,y+4)}
+  const xCount=series.length;const xLabelAt=[0,Math.floor(xCount/2),xCount-1].filter((v,i,arr)=>arr.indexOf(v)===i&&v>=0);const toX=i=>pad+(w-2*pad)*(i/(series.length-1||1));xLabelAt.forEach(i=>{const x=toX(i);const t=(series[i]&&series[i].t)||String(i+1);ctx.fillText(String(t).slice(0,10),x-20,h-10)})
   const toX=i=>pad+(w-2*pad)*(i/(series.length-1||1));
   const toY=v=>pad+(h-2*pad)*(1-(v-min)/(max-min||1));
   // line
@@ -137,12 +143,18 @@ async function bind(){
   const s=qs('loadSampleBtn');if(s)s.onclick=()=>{macro={...defaultMacro};appendHistory(macro);renderMeta();renderAllCharts();analyzeMacro()};
   const clr=qs('clearMacroBtn');if(clr)clr.onclick=()=>{history={};saveHistory(history);renderAllCharts();qs('macroResult').innerHTML=''};
   async function loadDefaultHistory(){try{const res=await fetch('../data/macro_history.json',{cache:'no-cache'});if(res.ok){const json=await res.json();mergeHistory(json,true);renderAllCharts()}}catch(e){}}
+  function seedHistoryIfEmpty(months=36){
+    const keys=['pmi','newOrders','tsfYoY','m1YoY','m2YoY','houseWoW','cpiYoY','unemp'];
+    const now=new Date();const makeDate=(m)=>{const d=new Date(now);d.setMonth(d.getMonth()-m);const y=d.getFullYear();const mm=String(d.getMonth()+1).padStart(2,'0');return `${y}-${mm}`};
+    const base={pmi:macro.pmi,newOrders:macro.newOrders,tsfYoY:macro.tsfYoY,m1YoY:macro.m1YoY,m2YoY:macro.m2YoY,houseWoW:macro.houseWoW,cpiYoY:macro.cpiYoY,unemp:macro.unemp};
+    keys.forEach(k=>{if(!Array.isArray(history[k])||history[k].length<2){history[k]=[];for(let i=months-1;i>=0;i--){const t=makeDate(i);const noise=(Math.sin(i/3)+Math.cos(i/5))*0.6;const drift=(k==='pmi'||k==='newOrders')?((i- months/2)*0.01):0;const v=base[k]+noise+drift;history[k].push({t,v})}}});saveHistory(history)
+  }
   renderMeta();
   // ensure at least one point exists
   const hasData=(k)=>Array.isArray(history[k])&&history[k].length>0;
   if(!hasData('pmi')&&!hasData('newOrders')&&!hasData('tsfYoY')&&!hasData('m1YoY')&&!hasData('m2YoY')&&!hasData('houseWoW')&&!hasData('cpiYoY')&&!hasData('unemp')){
     await loadDefaultHistory();
-    if(!hasData('pmi')&&!hasData('newOrders')&&!hasData('tsfYoY')&&!hasData('m1YoY')&&!hasData('m2YoY')&&!hasData('houseWoW')&&!hasData('cpiYoY')&&!hasData('unemp')){appendHistory(macro)}
+    if(!hasData('pmi')&&!hasData('newOrders')&&!hasData('tsfYoY')&&!hasData('m1YoY')&&!hasData('m2YoY')&&!hasData('houseWoW')&&!hasData('cpiYoY')&&!hasData('unemp')){seedHistoryIfEmpty(36)}
   }
   if(macroSource.url){fetchMacroFromSource()}
   renderAllCharts();
