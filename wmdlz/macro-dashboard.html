@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>宏观经济分析（独立页）</title>
+<link rel="stylesheet" href="assets/styles.css">
+<style>
+.chart{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px}
+.chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.chart-title{font-weight:600}
+.chart-meta{color:var(--muted)}
+.guide{margin-top:8px;color:var(--muted);font-size:14px;line-height:1.6}
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+canvas{width:100%;height:220px}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="brand">宏观经济分析（独立页）</div>
+  <nav class="nav">
+    <a href="../index.html">返回仓库首页</a>
+  </nav>
+</header>
+<main class="main">
+  <section class="section">
+    <h1 class="section-title">数据源设置与采集</h1>
+    <div class="form" id="macroSourceForm">
+      <div class="form-row"><span>数据源URL</span><input type="url" id="macroSourceUrl" placeholder="返回JSON的接口地址"></div>
+      <div class="form-row"><span>API Key（可选）</span><input type="text" id="macroSourceKey" placeholder="如需鉴权可填写"></div>
+      <div class="form-row"><span>代理URL（可选）</span><input type="url" id="macroProxy" placeholder="用于解决CORS的代理前缀"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" id="testSourceBtn">测试连接</button>
+        <button class="btn primary" id="fetchNowBtn">立即采集</button>
+      </div>
+      <div id="macroSourceMsg" class="result"></div>
+    </div>
+  </section>
+  <section class="section">
+    <h1 class="section-title">核心指标图表</h1>
+    <div class="grid-2">
+      <div class="chart"><div class="chart-head"><div class="chart-title">制造业PMI</div><div class="chart-meta" id="meta-pmi"></div></div><canvas id="chart-pmi"></canvas><div class="guide">>50为扩张；连续3个月>50更可信；与新订单指数共振时，复苏信号更强。</div></div>
+      <div class="chart"><div class="chart-head"><div class="chart-title">新订单指数</div><div class="chart-meta" id="meta-newOrders"></div></div><canvas id="chart-newOrders"></canvas><div class="guide">领先PMI，反映未来生产与需求；持续上行优先考虑周期板块。</div></div>
+      <div class="chart"><div class="chart-head"><div class="chart-title">社融存量同比(%)</div><div class="chart-meta" id="meta-tsfYoY"></div></div><canvas id="chart-tsfYoY"></canvas><div class="guide">信用扩张（回升）利好短期流动性与融资环境；观察与M2的剪刀差。</div></div>
+      <div class="chart"><div class="chart-head"><div class="chart-title">M1同比(%)</div><div class="chart-meta" id="meta-m1YoY"></div></div><canvas id="chart-m1YoY"></canvas><div class="guide">企业活力与现金流指标；M1>M2常指企业经营改善，“M1定买卖”可作为辅助参考。</div></div>
+      <div class="chart"><div class="chart-head"><div class="chart-title">M2同比(%)</div><div class="chart-meta" id="meta-m2YoY"></div></div><canvas id="chart-m2YoY"></canvas><div class="guide">广义货币供给，反映整体流动性环境；与社融、M1配合判断。</div></div>
+      <div class="chart"><div class="chart-head"><div class="chart-title">30城成交周环比(%)</div><div class="chart-meta" id="meta-houseWoW"></div></div><canvas id="chart-houseWoW"></canvas><div class="guide">房地产“领先中的领先”；连续回升领先70城房价1-2季度。</div></div>
+      <div class="chart"><div class="chart-head"><div class="chart-title">CPI同比(%)</div><div class="chart-meta" id="meta-cpiYoY"></div></div><canvas id="chart-cpiYoY"></canvas><div class="guide">通胀约束货币政策；CPI>3%+PMI偏强可能触发收紧预期。</div></div>
+      <div class="chart"><div class="chart-head"><div class="chart-title">城镇调查失业率(%)</div><div class="chart-meta" id="meta-unemp"></div></div><canvas id="chart-unemp"></canvas><div class="guide">影响消费与社会稳定；失业率上升需提高防御与现金权重。</div></div>
+    </div>
+  </section>
+  <section class="section">
+    <h1 class="section-title">情景判断与建议</h1>
+    <div id="macroResult" class="result"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" id="analyzeBtn">分析</button>
+      <button class="btn" id="loadSampleBtn">加载示例数据</button>
+      <button class="btn" id="clearMacroBtn">清空历史</button>
+    </div>
+  </section>
+</main>
+<footer class="footer">
+  <div>数据源：国家统计局｜中国人民银行｜中指研究院｜IMF</div>
+  <div>© 2026 Macro Live Analysis</div>
+</footer>
+<script>
+function qs(id){return document.getElementById(id)}
+function loadMacroSource(){try{return JSON.parse(localStorage.getItem('wmdlz_macro_source')||'{}')}catch(e){return {}}}
+function saveMacroSource(s){localStorage.setItem('wmdlz_macro_source',JSON.stringify(s))}
+let macroSource=loadMacroSource()
+function renderMacroSourceForm(){const u=qs('macroSourceUrl'),k=qs('macroSourceKey'),p=qs('macroProxy');if(u)u.value=macroSource.url||'';if(k)k.value=macroSource.key||'';if(p)p.value=macroSource.proxy||''}
+function readMacroSourceFromUI(){const u=qs('macroSourceUrl'),k=qs('macroSourceKey'),p=qs('macroProxy');macroSource={url:u?u.value.trim():'',key:k?k.value.trim():'',proxy:p?p.value.trim():''};saveMacroSource(macroSource)}
+const defaultMacro={pmi:50.2,newOrders:51,tsfYoY:8.5,m1YoY:4.2,m2YoY:5.3,houseWoW:6.8,cpiYoY:1.2,unemp:5.1}
+function loadMacro(){try{return JSON.parse(localStorage.getItem('wmdlz_macro')||'null')}catch(e){return null}}
+function saveMacro(d){localStorage.setItem('wmdlz_macro',JSON.stringify(d))}
+let macro=loadMacro()||defaultMacro
+function normalizeMacroPayload(data){const g=(obj,keys)=>{for(const key of keys){if(obj[key]!=null)return obj[key]}return undefined};const r={pmi:parseFloat(g(data,['pmi','PMI'])),newOrders:parseFloat(g(data,['new_orders','newOrders','newOrdersIndex'])),tsfYoY:parseFloat(g(data,['tsf_yoy','social_financing_yoy'])),m1YoY:parseFloat(g(data,['m1_yoy','M1'])),m2YoY:parseFloat(g(data,['m2_yoy','M2'])),houseWoW:parseFloat(g(data,['house_wow','houseWoW','housing_sales_wow'])),cpiYoY:parseFloat(g(data,['cpi_yoy','CPI'])),unemp:parseFloat(g(data,['unemp','unemployment','unemployment_rate']))};Object.keys(r).forEach(k=>{if(isNaN(r[k]))r[k]=macro[k]});return r}
+async function fetchMacroFromSource(){readMacroSourceFromUI();const msg=qs('macroSourceMsg');if(!macroSource.url){if(msg)msg.textContent='请填写数据源URL';return}let url=macroSource.url;if(macroSource.proxy){url=macroSource.proxy+(macroSource.proxy.endsWith('?url=')?encodeURIComponent(macroSource.url):macroSource.url)}try{const res=await fetch(url,{headers:macroSource.key?{'X-API-Key':macroSource.key}:{}});if(!res.ok)throw new Error('状态码 '+res.status);const ct=res.headers.get('content-type')||'';let data;if(ct.includes('application/json')){data=await res.json()}else{const txt=await res.text();data=JSON.parse(txt)}const m=normalizeMacroPayload(data);macro=m;saveMacro(macro);appendHistory(macro);renderMeta();renderAllCharts();analyzeMacro();localStorage.setItem('wmdlz_macro_last_fetch',String(Date.now()));if(msg)msg.textContent='采集成功'}catch(e){if(msg)msg.textContent='采集失败：'+e.message}}
+function scheduleDailyFetch(){const last=parseInt(localStorage.getItem('wmdlz_macro_last_fetch')||'0',10);const now=Date.now();if(now-last>=24*60*60*1000){fetchMacroFromSource()}}
+function loadHistory(){try{return JSON.parse(localStorage.getItem('wmdlz_macro_history')||'{}')}catch(e){return {}}}
+function saveHistory(h){localStorage.setItem('wmdlz_macro_history',JSON.stringify(h))}
+let history=loadHistory()
+function appendHistory(m){const t=new Date().toISOString().slice(0,10);const push=(k,v)=>{history[k]=history[k]||[];history[k].push({t,v});if(history[k].length>360)history[k].shift()};push('pmi',m.pmi);push('newOrders',m.newOrders);push('tsfYoY',m.tsfYoY);push('m1YoY',m.m1YoY);push('m2YoY',m.m2YoY);push('houseWoW',m.houseWoW);push('cpiYoY',m.cpiYoY);push('unemp',m.unemp);saveHistory(history)}
+function renderMeta(){const set=(id,val)=>{const el=qs(id);if(el)el.textContent='当前：'+val.toFixed(2)};set('meta-pmi',macro.pmi);set('meta-newOrders',macro.newOrders);set('meta-tsfYoY',macro.tsfYoY);set('meta-m1YoY',macro.m1YoY);set('meta-m2YoY',macro.m2YoY);set('meta-houseWoW',macro.houseWoW);set('meta-cpiYoY',macro.cpiYoY);set('meta-unemp',macro.unemp)}
+function drawLineChart(canvasId,series,opts){const c=qs(canvasId);if(!c)return;const w=c.width=c.clientWidth;const h=c.height=c.clientHeight;const ctx=c.getContext('2d');const pad=32;const xs=series.map(p=>p.v).filter(v=>typeof v==='number'&&!isNaN(v));if(xs.length===0)return;const min=Math.min(...xs,opts&&opts.min!=null?opts.min:Infinity);const max=Math.max(...xs,opts&&opts.max!=null?opts.max:-Infinity);ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--panel');ctx.fillRect(0,0,w,h);ctx.strokeStyle='#334155';ctx.beginPath();ctx.moveTo(pad,h-pad);ctx.lineTo(w-pad,h-pad);ctx.lineTo(w-pad,pad);ctx.stroke();const toX=i=>pad+(w-2*pad)*(i/(series.length-1||1));const toY=v=>pad+(h-2*pad)*(1-(v-min)/(max-min||1));ctx.strokeStyle='#4f7cf7';ctx.lineWidth=2;ctx.beginPath();series.forEach((p,i)=>{const x=toX(i),y=toY(p.v);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();if(opts&&opts.threshold!=null){const y=toY(opts.threshold);ctx.strokeStyle=opts.thColor||'#22c55e';ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke();ctx.setLineDash([])}}
+function renderAllCharts(){drawLineChart('chart-pmi',history.pmi||[],{threshold:50});drawLineChart('chart-newOrders',history.newOrders||[],{});drawLineChart('chart-tsfYoY',history.tsfYoY||[],{});drawLineChart('chart-m1YoY',history.m1YoY||[],{});drawLineChart('chart-m2YoY',history.m2YoY||[],{});drawLineChart('chart-houseWoW',history.houseWoW||[],{threshold:0,thColor:'#22c55e'});drawLineChart('chart-cpiYoY',history.cpiYoY||[],{threshold:3,thColor:'#ef4444'});drawLineChart('chart-unemp',history.unemp||[],{threshold:5.5,thColor:'#ef4444'})}
+function analyzeMacro(){const pmiExp=macro.pmi>50;const pmiWeak=macro.pmi<48;const m1gtm2=macro.m1YoY>macro.m2YoY;const overheating=macro.pmi>52&&macro.cpiYoY>3;const stagf=macro.pmi<48&&macro.cpiYoY>4&&macro.unemp>5.5;let scenario='观望区间';let desc='信号不明显，继续跟踪先行指标组合';let advice='控制节奏，等待更明确的趋势组合';if(stagf){scenario='滞胀风险';desc='盈利下滑与通胀上行并存，失业率偏高';advice='降低仓位，现金为主，优先保本'}else if(overheating){scenario='过热预警';desc='扩张强劲伴随通胀抬升，政策收紧预期增强';advice='避免追高，关注防御板块与政策信号'}else if(pmiWeak&&(macro.tsfYoY<0||macro.houseWoW<0||!m1gtm2)){scenario='下行压力';desc='先行指标偏弱，信用与需求走弱';advice='谨慎为主，避免过早抄底，关注政策宽松'}else if(pmiExp&&m1gtm2&&macro.tsfYoY>=0){scenario='复苏初期';desc='流动性改善与扩张信号共振';advice='关注金融、地产、制造等周期板块'}const box=qs('macroResult');if(box)box.innerHTML=`<div style="display:flex;flex-direction:column;gap:8px"><div style="font-weight:600;font-size:18px">${scenario}</div><div>${desc}</div><div style="color:var(--ok)">${advice}</div></div>`}
+function bind(){renderMacroSourceForm();const t=qs('testSourceBtn');if(t)t.onclick=()=>{fetchMacroFromSource()};const n=qs('fetchNowBtn');if(n)n.onclick=()=>{fetchMacroFromSource()};const a=qs('analyzeBtn');if(a)a.onclick=()=>{appendHistory(macro);renderMeta();renderAllCharts();analyzeMacro()};const s=qs('loadSampleBtn');if(s)s.onclick=()=>{macro={...defaultMacro};appendHistory(macro);renderMeta();renderAllCharts();analyzeMacro()};const clr=qs('clearMacroBtn');if(clr)clr.onclick=()=>{history={};saveHistory(history);renderAllCharts();qs('macroResult').innerHTML=''};renderMeta();renderAllCharts();scheduleDailyFetch()}
+document.addEventListener('DOMContentLoaded',bind)
+</script>
+</body>
+</html>
