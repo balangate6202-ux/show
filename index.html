@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>宏观分析 - Show</title>
+    <title>Show - 首页</title>
     <style>
         * {
             margin: 0;
@@ -71,68 +71,51 @@
             border-bottom: 3px solid #667eea;
         }
         
-        .card h3 {
-            color: #4a5568;
-            font-size: 1.2em;
-            margin: 20px 0 10px;
-        }
-        
         .full-width {
             grid-column: 1 / -1;
         }
         
-        .link-list {
+        .page-list {
             list-style: none;
             padding: 0;
         }
         
-        .link-list li {
+        .page-list li {
             margin: 12px 0;
         }
         
-        .link-list a {
+        .page-list a {
             display: block;
-            padding: 15px 20px;
+            padding: 20px 25px;
             background: #f7fafc;
-            border-radius: 8px;
+            border-radius: 12px;
             text-decoration: none;
             color: #2d3748;
             font-weight: 500;
+            font-size: 1.1em;
             transition: all 0.3s ease;
-            border-left: 4px solid #667eea;
+            border-left: 5px solid #667eea;
         }
         
-        .link-list a:hover {
+        .page-list a:hover {
             background: #667eea;
             color: white;
-            transform: translateX(5px);
+            transform: translateX(8px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .page-icon {
+            font-size: 1.5em;
+            margin-right: 12px;
         }
         
         .tag {
             display: inline-block;
             padding: 4px 12px;
             border-radius: 20px;
-            font-size: 0.85em;
+            font-size: 0.8em;
             font-weight: 500;
-            margin: 3px;
-        }
-        
-        .tag-report {
-            background: #fed7d7;
-            color: #c53030;
-        }
-        
-        .tag-guide {
-            background: #feebc8;
-            color: #c05621;
-        }
-        
-        .tag-dashboard {
-            background: #c6f6d5;
-            color: #276749;
-        }
-        
-        .tag-tracking {
+            margin-left: 10px;
             background: #e9d8fd;
             color: #6b46c1;
         }
@@ -144,6 +127,16 @@
             text-align: center;
             color: #718096;
             margin-top: 30px;
+        }
+        
+        .coming-soon {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .coming-soon a {
+            pointer-events: none;
+            border-left-color: #a0aec0;
         }
         
         @media (max-width: 768px) {
@@ -160,129 +153,87 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📊 宏观分析 - Show</h1>
-            <p>宏观经济指标、先行指标、金融市场分析 - 快速访问入口</p>
+            <h1>🚀 Show - 首页</h1>
+            <p>快速访问所有分析页面和文档</p>
         </div>
 
         <div class="grid">
             <div class="card full-width">
-                <h2>🚀 快速导航</h2>
-                <ul class="link-list">
+                <h2>📋 页面导航</h2>
+                <ul class="page-list">
+                    <li>
+                        <a href="macro-analysis.html">
+                            <span class="page-icon">📊</span>
+                            宏观分析
+                            <span class="tag">已完成</span>
+                        </a>
+                    </li>
+                    <li class="coming-soon">
+                        <a href="#">
+                            <span class="page-icon">📈</span>
+                            股票分析
+                            <span class="tag">即将推出</span>
+                        </a>
+                    </li>
+                    <li class="coming-soon">
+                        <a href="#">
+                            <span class="page-icon">💰</span>
+                            财务分析
+                            <span class="tag">即将推出</span>
+                        </a>
+                    </li>
+                    <li class="coming-soon">
+                        <a href="#">
+                            <span class="page-icon">📚</span>
+                            研究报告
+                            <span class="tag">即将推出</span>
+                        </a>
+                    </li>
+                    <li class="coming-soon">
+                        <a href="#">
+                            <span class="page-icon">🎯</span>
+                            投资策略
+                            <span class="tag">即将推出</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>🔗 外部链接</h2>
+                <ul class="page-list">
                     <li>
                         <a href="https://github.com/balangate6202-ux/myopenclawhome" target="_blank">
-                            📂 主仓库 - myopenclawhome
+                            <span class="page-icon">📂</span>
+                            主仓库 - myopenclawhome
                         </a>
                     </li>
                     <li>
                         <a href="https://github.com/balangate6202-ux/myopenclawhome/blob/main/notes/resources/leading-indicators-monitoring-dashboard.html" target="_blank">
-                            📊 先行指标监测仪表盘
+                            <span class="page-icon">📊</span>
+                            先行指标监测仪表盘
                         </a>
                     </li>
                     <li>
                         <a href="https://github.com/balangate6202-ux/myopenclawhome/blob/main/notes/resources/leading-indicators-complete-guide.md" target="_blank">
-                            📚 先行指标完整解析
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://github.com/balangate6202-ux/myopenclawhome/blob/main/notes/projects/financial-market-analysis-2026-02.md" target="_blank">
-                            📈 金融市场分析报告 - 2026年2月
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="card">
-                <h2>📋 核心指标</h2>
-                <h3>第一梯队：全球公认高可靠性指标</h3>
-                <div style="background: #f7fafc; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                    <span class="tag tag-report">PMI</span>
-                    <span class="tag tag-report">M1/M2</span>
-                    <span class="tag tag-report">社融</span>
-                    <span class="tag tag-report">新订单</span>
-                </div>
-                
-                <h3>中国特有先行指标</h3>
-                <div style="background: #f7fafc; padding: 15px; border-radius: 8px; margin: 10px 0;">
-                    <span class="tag tag-guide">克强指数</span>
-                    <span class="tag tag-guide">社融-M2剪刀差</span>
-                    <span class="tag tag-guide">30城商品房成交</span>
-                    <span class="tag tag-guide">挖掘机销量</span>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>📁 文档列表</h2>
-                <ul class="link-list">
-                    <li>
-                        <a href="https://github.com/balangate6202-ux/myopenclawhome/blob/main/notes/resources/leading-indicators-complete-guide.md" target="_blank">
-                            <span class="tag tag-guide">指南</span>
+                            <span class="page-icon">📚</span>
                             先行指标完整解析
                         </a>
                     </li>
-                    <li>
-                        <a href="https://github.com/balangate6202-ux/myopenclawhome/blob/main/notes/projects/financial-market-analysis-2026-02.md" target="_blank">
-                            <span class="tag tag-report">报告</span>
-                            金融市场分析报告 2026年2月
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://github.com/balangate6202-ux/myopenclawhome/blob/main/notes/areas/leading-indicators-tracking.md" target="_blank">
-                            <span class="tag tag-tracking">跟踪</span>
-                            先行指标监测表
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://github.com/balangate6202-ux/myopenclawhome/blob/main/notes/areas/macro-indicators-daily.md" target="_blank">
-                            <span class="tag tag-tracking">跟踪</span>
-                            宏观指标每日记录
-                        </a>
-                    </li>
                 </ul>
             </div>
 
-            <div class="card full-width">
-                <h2>📊 经济阶段判断</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
-                    <div style="background: #f0fff4; border-left: 6px solid #48bb78; padding: 20px; border-radius: 12px;">
-                        <h3 style="color: #276749; margin-bottom: 10px;">📈 经济上行初期</h3>
-                        <p style="color: #718096; font-size: 0.95em;">
-                            PMI > 50 + 社融增速回升 + 挖掘机销量增长
-                        </p>
-                    </div>
-                    <div style="background: #fffaf0; border-left: 6px solid #ed8936; padding: 20px; border-radius: 12px;">
-                        <h3 style="color: #c05621; margin-bottom: 10px;">⚠️ 经济过热预警</h3>
-                        <p style="color: #718096; font-size: 0.95em;">
-                            PMI > 52 + M1增速 > M2 + 房价指数快速上涨
-                        </p>
-                    </div>
-                    <div style="background: #fff5f5; border-left: 6px solid #f56565; padding: 20px; border-radius: 12px;">
-                        <h3 style="color: #c53030; margin-bottom: 10px;">📉 经济下行初期</h3>
-                        <p style="color: #718096; font-size: 0.95em;">
-                            PMI < 48 + 社融增速下滑 + 消费者信心下降
-                        </p>
-                    </div>
-                    <div style="background: #ebf8ff; border-left: 6px solid #4299e1; padding: 20px; border-radius: 12px;">
-                        <h3 style="color: #2b6cb0; margin-bottom: 10px;">🎯 衰退触底信号</h3>
-                        <p style="color: #718096; font-size: 0.95em;">
-                            PMI触底回升 + 社融-M2剪刀差收窄 + 房屋新开工企稳
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card full-width">
-                <h2>💡 核心原则</h2>
-                <div style="background: #f7fafc; padding: 25px; border-radius: 12px;">
-                    <h3 style="color: #2d3748; margin-bottom: 20px;">📌 组合验证原则</h3>
-                    <p style="font-size: 1.1em; line-height: 1.8; color: #4a5568;">
-                        <strong>至少 3 个先行指标同向变动才确认趋势</strong><br>
-                        单一指标易失真，不单独作为决策依据
-                    </p>
-                    
-                    <h3 style="color: #2d3748; margin: 25px 0 15px;">📌 趋势判断</h3>
-                    <p style="font-size: 1.1em; line-height: 1.8; color: #4a5568;">
-                        <strong>关注连续 3 个月同向变动（非单月波动）</strong><br>
-                        结合政策动向解读信号
+            <div class="card">
+                <h2>💡 添加新页面</h2>
+                <div style="background: #f7fafc; padding: 20px; border-radius: 12px;">
+                    <p style="color: #4a5568; line-height: 1.8;">
+                        <strong>如何添加新页面：</strong><br><br>
+                        1. 在仓库中创建新的 HTML 文件<br>
+                        2. 在首页 index.html 中添加链接<br>
+                        3. 提交并推送到 GitHub<br><br>
+                        <strong>页面命名规范：</strong><br>
+                        - 使用小写字母和连字符<br>
+                        - 例如：<code>stock-analysis.html</code>
                     </p>
                 </div>
             </div>
@@ -290,13 +241,13 @@
 
         <div class="footer">
             <p style="font-size: 1.3em; margin-bottom: 15px;">
-                <strong>掌握先行指标，就是在经济周期的浪潮中提前看到浪花，而非被浪打翻 🌊</strong>
+                <strong>Show - 你的分析展示中心 🌟</strong>
             </p>
             <p>
-                💡 提示：点击上方链接跳转到对应的文档页面
+                💡 提示：点击上方卡片跳转到对应页面
             </p>
             <p style="margin-top: 20px; color: #a0aec0;">
-                创建时间：2026-02-22 | 基于知识库 2024-2026 年权威资料整合
+                创建时间：2026-02-22 | 持续更新中...
             </p>
         </div>
     </div>
